@@ -13,25 +13,25 @@ const svg = d3.select("#scatterplot")
 
 // Load and process the CSV data
 d3.csv("../iris.csv").then(data => {
-    // Log to confirm data
     console.log("Loaded data:", data);
-
-    // Convert data to numeric types
+    console.log("Keys in data:", Object.keys(data[0])); // Log column names
+    
+    // Correctly map column names
     data.forEach(d => {
-        d.PetalLength = +d["Petal.Length"]; // Use correct column names
-        d.PetalWidth = +d["Petal.Width"];
-        d.Species = d["Species"];
+        d.PetalLength = +d["petal_length"] || +d["Petal.Length"] || 0;
+        d.PetalWidth = +d["petal_width"] || +d["Petal.Width"] || 0;
+        d.Species = d["species"] || d["Species"];
     });
 
     console.log("Processed data:", data);
 
     // Define scales
     const xScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.PetalLength) + 1]) // Add padding
+        .domain([0, d3.max(data, d => d.PetalLength) + 1])
         .range([0, width]);
 
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.PetalWidth) + 1]) // Add padding
+        .domain([0, d3.max(data, d => d.PetalWidth) + 1])
         .range([height, 0]);
 
 
