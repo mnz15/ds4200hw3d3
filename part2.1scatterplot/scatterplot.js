@@ -18,9 +18,9 @@ d3.csv("../iris.csv").then(data => {
     
     // Correctly map column names
     data.forEach(d => {
-        d.PetalLength = +d["petal_length"] || +d["Petal.Length"] || 0;
-        d.PetalWidth = +d["petal_width"] || +d["Petal.Width"] || 0;
-        d.Species = d["species"] || d["Species"];
+        d.PetalLength = +d["PetalLength"]; // Correct
+        d.PetalWidth = +d["PetalWidth"];
+        d.Species = d["Species"];
     });
 
     console.log("Processed data:", data);
