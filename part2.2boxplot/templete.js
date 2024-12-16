@@ -1,88 +1,110 @@
-// Load the data
-const iris = d3.csv("iris.csv");
+// Set the dimensions and margins of the graph
+const margin = { top: 20, right: 30, bottom: 50, left: 50 },
+    width = 600 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-// Once the data is loaded, proceed with plotting
-penguins.then(function(data) {
-    // Convert string values to numbers
-    data.forEach(function(d) {
-        d.PetalLength = +d.PetalLength;
-        d.PetalWidth = +d.PetalWidth;
+// Create the SVG canvas
+const svg = d3.select("#boxplot")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// Load and process the CSV data
+d3.csv("../iris.csv").then(data => {
+    console.log("Loaded data:", data);
+
+    // Convert strings to numeric values for PetalLength and species
+    data.forEach(d => {
+        d.PetalLength = +d.PetalLength; // Convert PetalLength to a number
+        d.Species = d.Species; // Keep Species as is
     });
 
-    // Define the dimensions and margins for the SVG
+    // Group the data by species and compute quartiles
+    const quartilesBySpecies = d3.rollup(
+        data,
+        values => {
+            const sorted = values.map(d => d.PetalLength).sort(d3.ascending);
+            const q1 = d3.quantile(sorted, 0.25);
+            const median = d3.quantile(sorted, 0.5);
+            const q3 = d3.quantile(sorted, 0.75);
+            const iqr = q3 - q1;
+            return { q1, median, q3, iqr };
+        },
+        d => d.Species
+    );
 
+    // Define the scales
+    const xScale = d3.scaleBand()
+        .domain(Array.from(quartilesBySpecies.keys()))
+        .range([0, width])
+        .padding(0.2);
 
-    // Create the SVG container
-    
-    
-    // Set up scales for x and y axes
-    // d3.min(data, d => d.bill_length_mm)-5
+    const yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.PetalLength) + 1])
+        .nice()
+        .range([height, 0]);
 
-    const colorScale = d3.scaleOrdinal()
-        .domain(data.map(d => d.Species))
-        .range(d3.schemeCategory10);
+    // Add X Axis
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xScale))
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", 40)
+        .attr("fill", "black")
+        .text("Species");
 
-    // Add scales     
-    
+    // Add Y Axis
+    svg.append("g")
+        .call(d3.axisLeft(yScale))
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -40)
+        .attr("fill", "black")
+        .text("Petal Length");
 
-    // Add circles for each data point
-    
-
-    // Add x-axis label
-    
-
-    // Add y-axis label
-    
-
-    // Add legend
-    const legend = svg.selectAll(".legend")
-        .data(colorScale.domain())
-        .enter().append("g")
-        .attr("class", "legend")
-        .attr("transform", (d, i) => "translate(0," + i * 20 + ")");
-
-});
-
-penguins.then(function(data) {
-    // Convert string values to numbers
-    
-
-    // Define the dimensions and margins for the SVG
-    
-
-    // Create the SVG container
-    
-
-    // Set up scales for x and y axes
-    
-
-    // Add scales     
-    
-
-    // Add x-axis label
-    
-
-    // Add y-axis label
-    
-
-    const rollupFunction = function(groupData) {
-        const values = groupData.map(d => d.PetalLength).sort(d3.ascending);
-        const q1 = d3.quantile(values, 0.25);
-        return { q1};
-    };
-
-    const quartilesBySpecies = d3.rollup(data, rollupFunction, d => d.Species);
-
-    quartilesBySpecies.forEach((quartiles, Species) => {
-        const x = xScale(Species);
+    // Draw the box plots
+    quartilesBySpecies.forEach((quartiles, species) => {
+        const x = xScale(species);
         const boxWidth = xScale.bandwidth();
 
-        // Draw vertical lines
-        
-        // Draw box
-        
-        // Draw median line
-        
-        
+        // Draw the box
+        svg.append("rect")
+            .attr("x", x)
+            .attr("y", yScale(quartiles.q3))
+            .attr("width", boxWidth)
+            .attr("height", yScale(quartiles.q1) - yScale(quartiles.q3))
+            .attr("fill", "#69b3a2")
+            .attr("stroke", "black");
+
+        // Median line
+        svg.append("line")
+            .attr("x1", x)
+            .attr("x2", x + boxWidth)
+            .attr("y1", yScale(quartiles.median))
+            .attr("y2", yScale(quartiles.median))
+            .attr("stroke", "black")
+            .attr("stroke-width", 2);
+
+        // Whiskers
+        svg.append("line") // Top whisker
+            .attr("x1", x + boxWidth / 2)
+            .attr("x2", x + boxWidth / 2)
+            .attr("y1", yScale(quartiles.q3))
+            .attr("y2", yScale(quartiles.q3 + 1.5 * quartiles.iqr))
+            .attr("stroke", "black");
+
+        svg.append("line") // Bottom whisker
+            .attr("x1", x + boxWidth / 2)
+            .attr("x2", x + boxWidth / 2)
+            .attr("y1", yScale(quartiles.q1))
+            .attr("y2", yScale(quartiles.q1 - 1.5 * quartiles.iqr))
+            .attr("stroke", "black");
     });
+}).catch(error => {
+    console.error("Error loading the CSV file:", error);
 });
+
