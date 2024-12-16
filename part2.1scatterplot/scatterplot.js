@@ -20,6 +20,7 @@ d3.csv("../iris.csv").then(data => {
     data.forEach(d => {
         d.PetalLength = +d["Petal.Length"]; // Use correct column names
         d.PetalWidth = +d["Petal.Width"];
+        d.Species = d["Species"];
     });
 
     console.log("Processed data:", data);
