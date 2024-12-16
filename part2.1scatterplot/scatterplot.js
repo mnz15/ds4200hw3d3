@@ -13,10 +13,10 @@ const svg = d3.select("#scatterplot")
 
 // Load and process the CSV data
 d3.csv("iris.csv").then(data => {
-    // Convert Petal Length and Petal Width to numeric values
+    // Convert data to numeric types
     data.forEach(d => {
-        d.PetalLength = +d["PetalLength"];
-        d.PetalWidth = +d["PetalWidth"];
+        d.PetalLength = +d["petal_length"];
+        d.PetalWidth = +d["petal_width"];
     });
 
     // Define scales
@@ -50,7 +50,7 @@ d3.csv("iris.csv").then(data => {
         .attr("fill", "black")
         .text("Petal Width");
 
-    // Add circles for data points
+    // Add circles
     svg.selectAll("circle")
         .data(data)
         .enter()
@@ -58,7 +58,7 @@ d3.csv("iris.csv").then(data => {
         .attr("cx", d => xScale(d.PetalLength))
         .attr("cy", d => yScale(d.PetalWidth))
         .attr("r", 5)
-        .attr("fill", d => colorScale(d.Species));
+        .attr("fill", d => colorScale(d.species));
 
     // Add legend
     const legend = svg.selectAll(".legend")
