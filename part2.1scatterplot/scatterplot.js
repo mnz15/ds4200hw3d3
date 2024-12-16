@@ -27,12 +27,13 @@ d3.csv("../iris.csv").then(data => {
 
     // Define scales
     const xScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.PetalLength)])
+        .domain([0, d3.max(data, d => d.PetalLength) + 1]) // Add padding
         .range([0, width]);
 
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.PetalWidth)])
+        .domain([0, d3.max(data, d => d.PetalWidth) + 1]) // Add padding
         .range([height, 0]);
+
 
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
