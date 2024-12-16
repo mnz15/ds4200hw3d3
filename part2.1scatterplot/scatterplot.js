@@ -12,12 +12,17 @@ const svg = d3.select("#scatterplot")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
 // Load and process the CSV data
-d3.csv("iris.csv").then(data => {
+d3.csv("../iris.csv").then(data => {
+    // Log to confirm data
+    console.log("Loaded data:", data);
+
     // Convert data to numeric types
     data.forEach(d => {
-        d.PetalLength = +d["petal_length"];
-        d.PetalWidth = +d["petal_width"];
+        d.PetalLength = +d["Petal.Length"]; // Use correct column names
+        d.PetalWidth = +d["Petal.Width"];
     });
+
+    console.log("Processed data:", data);
 
     // Define scales
     const xScale = d3.scaleLinear()
@@ -58,7 +63,7 @@ d3.csv("iris.csv").then(data => {
         .attr("cx", d => xScale(d.PetalLength))
         .attr("cy", d => yScale(d.PetalWidth))
         .attr("r", 5)
-        .attr("fill", d => colorScale(d.species));
+        .attr("fill", d => colorScale(d.Species));
 
     // Add legend
     const legend = svg.selectAll(".legend")
@@ -80,4 +85,6 @@ d3.csv("iris.csv").then(data => {
         .attr("dy", ".35em")
         .style("text-anchor", "end")
         .text(d => d);
+}).catch(error => {
+    console.error("Error loading the CSV file:", error);
 });
